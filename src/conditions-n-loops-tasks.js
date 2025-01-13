@@ -121,7 +121,7 @@ function isIsoscelesTriangle(a, b, c) {
  *  26  => XXVI
  */
 function convertToRomanNumerals(num) {
-  const romanNumerals = [
+  const romanMappings = [
     { value: 10, symbol: 'X' },
     { value: 9, symbol: 'IX' },
     { value: 5, symbol: 'V' },
@@ -129,16 +129,13 @@ function convertToRomanNumerals(num) {
     { value: 1, symbol: 'I' },
   ];
   let result = '';
-  let Num = num;
-  let i = 0;
-  while (i < romanNumerals.length) {
-    while (Num >= romanNumerals[i].value) {
-      result += romanNumerals[i].symbol;
-      Num -= romanNumerals[i].value;
+  let remaining = num;
+  for (let i = 0; i < romanMappings.length; i += 1) {
+    while (remaining >= romanMappings[i].value) {
+      result += romanMappings[i].symbol;
+      remaining -= romanMappings[i].value;
     }
-    i += 1;
   }
-
   return result;
 }
 
@@ -158,31 +155,56 @@ function convertToRomanNumerals(num) {
  *  '1950.2'  => 'one nine five zero point two'
  */
 function convertNumberToString(numberStr) {
-  const digitToWord = {
-    0: 'zero',
-    1: 'one',
-    2: 'two',
-    3: 'three',
-    4: 'four',
-    5: 'five',
-    6: 'six',
-    7: 'seven',
-    8: 'eight',
-    9: 'nine',
-    '-': 'minus',
-    '.': 'point',
-    ',': 'point',
-  };
   let result = '';
   for (let i = 0; i < numberStr.length; i += 1) {
     const char = numberStr[i];
-    if (digitToWord[char] !== undefined) {
+    let word;
+    switch (char) {
+      case '0':
+        word = 'zero';
+        break;
+      case '1':
+        word = 'one';
+        break;
+      case '2':
+        word = 'two';
+        break;
+      case '3':
+        word = 'three';
+        break;
+      case '4':
+        word = 'four';
+        break;
+      case '5':
+        word = 'five';
+        break;
+      case '6':
+        word = 'six';
+        break;
+      case '7':
+        word = 'seven';
+        break;
+      case '8':
+        word = 'eight';
+        break;
+      case '9':
+        word = 'nine';
+        break;
+      case '-':
+        word = 'minus';
+        break;
+      case '.':
+      case ',':
+        word = 'point';
+        break;
+      default:
+        word = '';
+    }
+    if (word) {
       if (result.length > 0) {
         result += ' ';
       }
-      result += digitToWord[char];
-    } else {
-      throw new Error(`Unsupported character: ${char}`);
+      result += word;
     }
   }
   return result;
@@ -201,15 +223,11 @@ function convertNumberToString(numberStr) {
  *  'qweqwe'    => false
  */
 function isPalindrome(str) {
-  const { length } = str; // Длина строки
-  // Сравниваем символы с начала и конца строки
-  for (let i = 0; i < length / 2; i += 1) {
-    if (str[i] !== str[length - 1 - i]) {
-      return false; // Если символы не совпадают, строка не палиндром
-    }
+  let reverseStr = '';
+  for (let i = str.length - 1; i >= 0; i -= 1) {
+    reverseStr += str[i];
   }
-
-  return true;
+  return str === reverseStr;
 }
 
 /**
@@ -229,10 +247,9 @@ function isPalindrome(str) {
 function getIndexOf(str, letter) {
   for (let i = 0; i < str.length; i += 1) {
     if (str[i] === letter) {
-      return i; // Возвращаем индекс при первом совпадении
+      return i;
     }
   }
-
   return -1;
 }
 
@@ -252,20 +269,13 @@ function getIndexOf(str, letter) {
  *  12345, 6    => false
  */
 function isContainNumber(num, digit) {
-  let Num = num;
-  if (Num < 0) {
-    Num = -Num;
-  }
-  // Обрабатываем каждую цифру числа
-  while (Num > 0) {
-    const currentDigit = Num % 10; // Получаем последнюю цифру
-    if (currentDigit === digit) {
-      return true; // Если цифра найдена, возвращаем true
+  const numStr = String(num);
+  for (let i = 0; i < numStr.length; i += 1) {
+    if (numStr[i] === String(digit)) {
+      return true;
     }
-    Num = Math.floor(Num / 10); // Убираем последнюю цифру
   }
-  // Проверка для случая num = 0 и digit = 0
-  return digit === 0 && num === 0;
+  return false;
 }
 
 /**
@@ -282,24 +292,19 @@ function isContainNumber(num, digit) {
  *  [1, 2, 3, 4, 5] => -1   => no balance element
  */
 function getBalanceIndex(arr) {
-  let totalSum = 0;
-
-  // Считаем общую сумму всех элементов массива
   for (let i = 0; i < arr.length; i += 1) {
-    totalSum += arr[i];
-  }
-  let leftSum = 0;
-  // Проходим по массиву и ищем баланс
-  for (let i = 0; i < arr.length; i += 1) {
-    // Правая сумма = общая сумма - левая сумма - текущий элемент
-    const rightSum = totalSum - leftSum - arr[i];
-    if (leftSum === rightSum) {
-      return i; // Если суммы равны, возвращаем индекс
+    let leftSum = 0;
+    let rightSum = 0;
+    for (let j = 0; j < i; j += 1) {
+      leftSum += arr[j];
     }
-    // Обновляем левую сумму для следующей итерации
-    leftSum += arr[i];
+    for (let k = i + 1; k < arr.length; k += 1) {
+      rightSum += arr[k];
+    }
+    if (leftSum === rightSum) {
+      return i;
+    }
   }
-
   return -1;
 }
 
@@ -332,46 +337,37 @@ function getSpiralMatrix(size) {
       matrix[i][j] = 0;
     }
   }
-
-  let left = 0;
-  let right = size - 1;
+  let value = 1;
   let top = 0;
   let bottom = size - 1;
-  let num = 1;
-  while (left <= right && top <= bottom) {
-    // Заполнение верхней строки (слева направо)
+  let left = 0;
+  let right = size - 1;
+  while (top <= bottom && left <= right) {
     for (let i = left; i <= right; i += 1) {
-      num += 1;
-      matrix[top][i] = num;
+      matrix[top][i] = value;
+      value += 1;
     }
     top += 1;
-
-    // Заполнение правого столбца (сверху вниз)
     for (let i = top; i <= bottom; i += 1) {
-      num += 1;
-      matrix[i][right] = num;
+      matrix[i][right] = value;
+      value += 1;
     }
     right -= 1;
-
-    // Заполнение нижней строки (справа налево)
     if (top <= bottom) {
       for (let i = right; i >= left; i -= 1) {
-        num += 1;
-        matrix[bottom][i] = num;
+        matrix[bottom][i] = value;
+        value += 1;
       }
       bottom -= 1;
     }
-
-    // Заполнение левого столбца (снизу вверх)
     if (left <= right) {
       for (let i = bottom; i >= top; i -= 1) {
-        num += 1;
-        matrix[i][left] = num;
+        matrix[i][left] = value;
+        value += 1;
       }
       left += 1;
     }
   }
-
   return matrix;
 }
 
@@ -391,33 +387,23 @@ function getSpiralMatrix(size) {
  *  ]                 ]
  */
 function rotateMatrix(matrix) {
-  const Matrix = matrix;
-  const n = Matrix.length;
-
-  // Транспонируем матрицу
+  const n = matrix.length;
+  const rotated = matrix;
   for (let i = 0; i < n; i += 1) {
     for (let j = i + 1; j < n; j += 1) {
-      // Меняем элементы местами
-      const temp = Matrix[i][j];
-      Matrix[i][j] = Matrix[j][i];
-      Matrix[j][i] = temp;
+      const temp = rotated[i][j];
+      rotated[i][j] = rotated[j][i];
+      rotated[j][i] = temp;
     }
   }
-
-  // Инвертируем строки
   for (let i = 0; i < n; i += 1) {
-    let left = 0;
-    let right = n - 1;
-    while (left < right) {
-      const temp = Matrix[i][left];
-      Matrix[i][left] = Matrix[i][right];
-      Matrix[i][right] = temp;
-      left += 1;
-      right -= 1;
+    for (let j = 0; j < Math.floor(n / 2); j += 1) {
+      const temp = rotated[i][j];
+      rotated[i][j] = rotated[i][n - j - 1];
+      rotated[i][n - j - 1] = temp;
     }
   }
-
-  return Matrix;
+  return rotated;
 }
 
 /**
@@ -435,28 +421,32 @@ function rotateMatrix(matrix) {
  *  [-2, 9, 5, -3]  => [-3, -2, 5, 9]
  */
 function sortByAsc(arr) {
-  const Arr = arr;
-  const n = Arr.length;
-  // Проходим по всем элементам массива
-  for (let i = 0; i < n - 1; i += 1) {
-    let minIndex = i;
-
-    // Находим минимальный элемент в оставшейся части массива
-    for (let j = i + 1; j < n; j += 1) {
-      if (Arr[j] < Arr[minIndex]) {
-        minIndex = j;
+  const sortedArr = arr;
+  function partition(low, high) {
+    const pivot = arr[high];
+    let i = low - 1;
+    for (let j = low; j < high; j += 1) {
+      if (sortedArr[j] <= pivot) {
+        i += 1;
+        const temp = sortedArr[i];
+        sortedArr[i] = sortedArr[j];
+        sortedArr[j] = temp;
       }
     }
-
-    // Если минимальный элемент не на текущей позиции, меняем их местами
-    if (minIndex !== i) {
-      const temp = Arr[i];
-      Arr[i] = Arr[minIndex];
-      Arr[minIndex] = temp;
+    const temp = sortedArr[i + 1];
+    sortedArr[i + 1] = sortedArr[high];
+    sortedArr[high] = temp;
+    return i + 1;
+  }
+  function quickSort(low, high) {
+    if (low < high) {
+      const pi = partition(low, high);
+      quickSort(low, pi - 1);
+      quickSort(pi + 1, high);
     }
   }
-
-  return Arr;
+  quickSort(0, sortedArr.length - 1);
+  return sortedArr;
 }
 
 /**
@@ -477,27 +467,33 @@ function sortByAsc(arr) {
  *  'qwerty', 3 => 'qetwry' => 'qtrewy' => 'qrwtey'
  */
 function shuffleChar(str, iterations) {
-  let result = str;
-
-  // Выполняем заданное количество итераций
-  for (let i = 0; i < iterations; i += 1) {
-    let evenChars = '';
-    let oddChars = '';
-
-    // Разделяем строку на четные и нечетные индексы
-    for (let j = 0; j < result.length; j += 1) {
-      if (j % 2 === 0) {
-        evenChars += result[j]; // Четные индексы
+  function shuffleOnce(s) {
+    let even = '';
+    let odd = '';
+    for (let i = 0; i < s.length; i += 1) {
+      if (i % 2 === 0) {
+        even += s[i];
       } else {
-        oddChars += result[j]; // Нечетные индексы
+        odd += s[i];
       }
     }
-
-    // Объединяем четные и нечетные части
-    result = evenChars + oddChars;
+    return even + odd;
   }
-
-  return result;
+  let current = str;
+  const seen = new Map();
+  for (let i = 0; i < iterations; i += 1) {
+    if (seen.has(current)) {
+      const cycleLength = i - seen.get(current);
+      const remaining = (iterations - i) % cycleLength;
+      for (let j = 0; j < remaining; j += 1) {
+        current = shuffleOnce(current);
+      }
+      return current;
+    }
+    seen.set(current, i);
+    current = shuffleOnce(current);
+  }
+  return current;
 }
 
 /**
@@ -518,49 +514,46 @@ function shuffleChar(str, iterations) {
  * @returns {number} The nearest larger number, or original number if none exists.
  */
 function getNearestBigger(number) {
-  const digits = [];
-  let num = number;
-
-  // Разбиваем число на массив цифр
-  while (num > 0) {
-    digits.unshift(num % 10); // Извлекаем последнюю цифру
-    num = Math.floor(num / 10); // Убираем последнюю цифру
+  let digits = [];
+  let temp = number;
+  while (temp > 0) {
+    digits.push(temp % 10);
+    temp = Math.floor(temp / 10);
   }
+  digits = digits.reverse();
 
   let i = digits.length - 2;
-  // Шаг 1: Найти точку изменения (первую цифру, которая меньше цифры справа)
   while (i >= 0 && digits[i] >= digits[i + 1]) {
     i -= 1;
   }
 
-  // Если нет такой точки, то число не имеет следующей перестановки
-  if (i === -1) {
+  if (i < 0) {
     return number;
   }
 
-  // Шаг 2: Найти минимальную цифру справа, которая больше digits[i]
   let j = digits.length - 1;
   while (digits[j] <= digits[i]) {
     j -= 1;
   }
 
-  // Шаг 3: Обменять цифры
-  [digits[i], digits[j]] = [digits[j], digits[i]];
+  let tempDigit = digits[i];
+  digits[i] = digits[j];
+  digits[j] = tempDigit;
 
-  // Шаг 4: Отсортировать все цифры справа от позиции i
   let left = i + 1;
   let right = digits.length - 1;
   while (left < right) {
-    [digits[left], digits[right]] = [digits[right], digits[left]];
+    tempDigit = digits[left];
+    digits[left] = digits[right];
+    digits[right] = tempDigit;
     left += 1;
     right -= 1;
   }
 
-  // Собираем число из массива цифр
   let result = 0;
-  digits.forEach((digit) => {
-    result = result * 10 + digit;
-  });
+  for (let k = 0; k < digits.length; k += 1) {
+    result = result * 10 + digits[k];
+  }
 
   return result;
 }
